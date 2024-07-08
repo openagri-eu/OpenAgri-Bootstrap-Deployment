@@ -1,0 +1,29 @@
+version: '3.9'
+
+services:
+  gatekeeper_db:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=${GATEKEEPER_MYSQL_PASS}
+      - MYSQL_DATABASE=${GATEKEEPER_MYSQL_DB}
+      - MYSQL_USER=${GATEKEEPER_MYSQL_USER}
+      - MYSQL_PASSWORD=${GATEKEEPER_MYSQL_PASS}
+
+  gatekeeper:
+    image: ghcr.io/openagri-eu/gatekeeper:latest
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        sleep 10 && entrypoint.sh
+    environment:
+      - MYSQL_HOST=gatekeeper_db
+      - MYSQL_DB=${GATEKEEPER_MYSQL_DB}
+      - MYSQL_USER=${GATEKEEPER_MYSQL_USER}
+      - MYSQL_PASS=${GATEKEEPER_MYSQL_PASS}
+      - MYSQL_PORT=${GATEKEEPER_MYSQL_PORT}
+      - MAINTENANCE_MODE=OFF
+    ports:
+      - "9000:9000"
+    depends_on:
+      - gatekeeper_db
