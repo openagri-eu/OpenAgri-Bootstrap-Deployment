@@ -1,2 +1,2 @@
 .env
-services_in_use/*
+services_in_use/*.yml
