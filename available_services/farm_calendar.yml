@@ -9,15 +9,19 @@ services:
       POSTGRES_PASSWORD: ${FARM_CALENDAR_POSTGRES_PASSWORD}
   farm_calendar:
     image: ghcr.io/openagri-eu/farmcalendar:latest
-    command: python manage.py runserver 0.0.0.0:8000
+    command: /var/www/entrypoint.sh
     ports:
       - "8000:8000"
     environment:
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
       POSTGRES_HOST: farm_calendar_db
       POSTGRES_DB: ${FARM_CALENDAR_POSTGRES_DB}
       POSTGRES_USER: ${FARM_CALENDAR_POSTGRES_USER}
       POSTGRES_PASSWORD: ${FARM_CALENDAR_POSTGRES_PASSWORD}
       DJANGO_SECRET_KEY: ${FARM_CALENDAR_DJANGO_SECRET_KEY}
       LOGGING_LEVEL: ${LOGGING_LEVEL}
+      GATEKEEPER_LOGIN_URL: ${GATEKEEPER_LOGIN_URL}
+      JWT_SIGNING_KEY: ${JWT_SIGNING_KEY}
     depends_on:
       - farm_calendar_db
