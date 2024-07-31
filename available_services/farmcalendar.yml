@@ -1,28 +1,30 @@
 version: '3.9'
 
 services:
-  farm_calendar_db:
+  farmcalendar_db:
     image: postgres:16.3
     environment:
       POSTGRES_DB: ${FARM_CALENDAR_POSTGRES_DB}
       POSTGRES_USER: ${FARM_CALENDAR_POSTGRES_USER}
       POSTGRES_PASSWORD: ${FARM_CALENDAR_POSTGRES_PASSWORD}
-  farm_calendar:
+  farmcalendar:
     image: ghcr.io/openagri-eu/farmcalendar:latest
     command: /var/www/entrypoint.sh
     ports:
-      - "8000:8000"
+      - "${FARM_CALENDAR_APP_PORT}:${FARM_CALENDAR_APP_PORT}"
     environment:
-      APP_HOST: 0.0.0.0
-      APP_PORT: 8000
-      POSTGRES_HOST: farm_calendar_db
+      APP_HOST: ${FARM_CALENDAR_APP_HOST}
+      APP_PORT: ${FARM_CALENDAR_APP_PORT}
+      POSTGRES_HOST: farmcalendar_db
       POSTGRES_DB: ${FARM_CALENDAR_POSTGRES_DB}
       POSTGRES_USER: ${FARM_CALENDAR_POSTGRES_USER}
       POSTGRES_PASSWORD: ${FARM_CALENDAR_POSTGRES_PASSWORD}
       DJANGO_SECRET_KEY: ${FARM_CALENDAR_DJANGO_SECRET_KEY}
       LOGGING_LEVEL: ${LOGGING_LEVEL}
       GATEKEEPER_LOGIN_URL: ${GATEKEEPER_LOGIN_URL}
+      AUTO_CREATE_AUTH_USER: True
       JWT_SIGNING_KEY: ${JWT_SIGNING_KEY}
       JWT_COOKIE_NAME: ${JWT_COOKIE_NAME}
+      EXTRA_ALLOWED_HOSTS: ${FARM_CALENDAR_EXTRA_ALLOWED_HOSTS}
     depends_on:
-      - farm_calendar_db
+      - farmcalendar_db

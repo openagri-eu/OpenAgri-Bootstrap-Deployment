@@ -2,28 +2,28 @@ version: '3.9'
 
 services:
   gatekeeper_db:
-    image: mysql:8.0
+    image: postgres:16.3
     environment:
-      - MYSQL_ROOT_PASSWORD=${GATEKEEPER_MYSQL_PASS}
-      - MYSQL_DATABASE=${GATEKEEPER_MYSQL_DB}
-      - MYSQL_USER=${GATEKEEPER_MYSQL_USER}
-      - MYSQL_PASSWORD=${GATEKEEPER_MYSQL_PASS}
+      POSTGRES_DB: ${GATEKEEPER_DB_NAME}
+      POSTGRES_USER: ${GATEKEEPER_DB_USER}
+      POSTGRES_PASSWORD: ${GATEKEEPER_DB_PASS}
 
   gatekeeper:
     image: ghcr.io/openagri-eu/gatekeeper:latest
-    entrypoint: /bin/bash
-    command:
-      - -c
-      - |
-        sleep 10 && entrypoint.sh
     environment:
-      - MYSQL_HOST=gatekeeper_db
-      - MYSQL_DB=${GATEKEEPER_MYSQL_DB}
-      - MYSQL_USER=${GATEKEEPER_MYSQL_USER}
-      - MYSQL_PASS=${GATEKEEPER_MYSQL_PASS}
-      - MYSQL_PORT=${GATEKEEPER_MYSQL_PORT}
+      - DATABASE_URL=postgres://${GATEKEEPER_DB_USER}:${GATEKEEPER_DB_PASS}@gatekeeper_db:5432/${GATEKEEPER_DB_NAME}
       - MAINTENANCE_MODE=OFF
+      - APP_HOST=${GATEKEEPER_APP_HOST}
+      - APP_PORT=${GATEKEEPER_APP_PORT}
+      - DJANGO_PORT=${GATEKEEPER_APP_PORT}
+      - DJANGO_SECRET_KEY=${GATEKEEPER_DJANGO_SECRET_KEY}
+      - SUPERUSER_USERNAME=${GATEKEEPER_SUPERUSER_USERNAME}
+      - SUPERUSER_EMAIL=${GATEKEEPER_SUPERUSER_EMAIL}
+      - SUPERUSER_PASSWORD=${GATEKEEPER_SUPERUSER_PASSWORD}
+      - JWT_SIGNING_KEY=${JWT_SIGNING_KEY}
+      - FARM_CALENDAR_API=${GATEKEEPER_FARM_CALENDAR_API}
+      - FARM_CALENDAR_POST_AUTH=${GATEKEEPER_FARM_CALENDAR_POST_AUTH}
     ports:
-      - "9000:9000"
+      - ${GATEKEEPER_APP_PORT}:${GATEKEEPER_APP_PORT}
     depends_on:
       - gatekeeper_db
