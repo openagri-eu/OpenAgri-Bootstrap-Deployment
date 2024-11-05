@@ -1,5 +1,5 @@
-# OpenAgri EntryPoint
-This repository serves as a easy to use entry point, with a modular configuration and deployment of the OpenAgri services.
+# OpenAgri Bootstrap Deployment
+This repository serves to bootstrap the deployment process of OpenAgri services with a modular configuration.
 
 # Dependencies
 This project depends on docker (version > 20.10.0) and Python (2 or 3).
