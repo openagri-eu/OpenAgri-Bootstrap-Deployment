@@ -26,5 +26,12 @@ services:
       JWT_SIGNING_KEY: ${JWT_SIGNING_KEY}
       JWT_COOKIE_NAME: ${JWT_COOKIE_NAME}
       EXTRA_ALLOWED_HOSTS: ${FARM_CALENDAR_EXTRA_ALLOWED_HOSTS}
+      VIRTUAL_HOST: ${FARM_CALENDAR_VIRTUAL_HOST}
+      VIRTUAL_PORT: ${FARM_CALENDAR_APP_PORT}
+      HTTP_PROXY: ${HTTP_PROXY}
+      HTTPS_PROXY: ${HTTPS_PROXY}
+      http_proxy: ${HTTP_PROXY}
+      https_proxy: ${HTTPS_PROXY}
+      NO_PROXY: ${DEFAULT_NO_PROXY},farmcalendar_db
     depends_on:
       - farmcalendar_db
