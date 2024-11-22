@@ -1,0 +1,32 @@
+# version: '3.9'
+
+services:
+  weathersrv_db:
+    image: mongo:4
+    command: mongod
+    ports:
+      - '24252:24252'
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${WEATHER_SRV_MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${WEATHER_SRV_MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${WEATHER_SRV_MONGO_INITDB_DATABASE}
+
+  weathersrv:
+    image: ghcr.io/openagri-eu/weather-service:latest
+    depends_on:
+      - mongodb
+    ports:
+      - '8000:8000'
+      - "${WEATHER_SRV_PORT}:${WEATHER_SRV_PORT}"
+    environment:
+      LOGGING_LEVEL: ${WEATHER_SRV_LOGGING_LEVEL:-INFO}
+      WEATHER_SRV_PORT: ${WEATHER_SRV_PORT:-8000}
+      DATABASE_URI: ${WEATHER_SRV_DATABASE_URI}
+      DATABASE_NAME: ${WEATHER_SRV_DATABASE_NAME}
+      EXTRA_ALLOWED_HOSTS: ${WEATHER_SRV_EXTRA_ALLOWED_HOSTS}
+      OPENWEATHERMAP_API_KEY: ${WEATHER_SRV_OPENWEATHERMAP_KEY}
+      JWT_KEY: ${JWT_SIGNING_KEY}
+      ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      CRYPT_CONTEXT_SCHEME: ${JWT_CRYPT_CONTEXT_SCHEME:-bcrypt}
+      ACCESS_TOKEN_EXPIRE_MINUTES: 60
