@@ -2,11 +2,19 @@ version: '3.9'
 
 services:
   gatekeeper_db:
-    image: postgres:16.3
+#    image: postgres:16.3
+    image: mysql:8.0
     environment:
-      POSTGRES_DB: ${GATEKEEPER_DB_NAME}
-      POSTGRES_USER: ${GATEKEEPER_DB_USER}
-      POSTGRES_PASSWORD: ${GATEKEEPER_DB_PASS}
+      MYSQL_DATABASE: ${GATEKEEPER_DB_NAME}
+      MYSQL_USER: ${GATEKEEPER_DB_USER}
+      MYSQL_PASSWORD: ${GATEKEEPER_DB_PASS}
+      MYSQL_ROOT_PASSWORD: ${GATEKEEPER_DB_PASS}
+
+#      POSTGRES_DB: ${GATEKEEPER_DB_NAME}
+#      POSTGRES_USER: ${GATEKEEPER_DB_USER}
+#      POSTGRES_PASSWORD: ${GATEKEEPER_DB_PASS}
+    networks:
+      - openagri_network
 
   gatekeeper:
     image: ghcr.io/openagri-eu/gatekeeper:latest
@@ -26,12 +34,18 @@ services:
       - EXTRA_ALLOWED_HOSTS=${GATEKEEPER_EXTRA_ALLOWED_HOSTS}
       - VIRTUAL_HOST=${GATEKEEPER_VIRTUAL_HOST}
       - VIRTUAL_PORT=${GATEKEEPER_APP_PORT}
-      - HTTP_PROXY=${HTTP_PROXY}
-      - HTTPS_PROXY=${HTTPS_PROXY}
-      - http_proxy=${HTTP_PROXY}
-      - https_proxy=${HTTPS_PROXY}
+#      - HTTP_PROXY=${HTTP_PROXY}
+#      - HTTPS_PROXY=${HTTPS_PROXY}
+#      - http_proxy=${HTTP_PROXY}
+#      - https_proxy=${HTTPS_PROXY}
       - NO_PROXY=${DEFAULT_NO_PROXY},gatekeeper_db
     ports:
       - ${GATEKEEPER_APP_PORT}:${GATEKEEPER_APP_PORT}
     depends_on:
       - gatekeeper_db
+    networks:
+      - openagri_network
+
+networks:
+  openagri_network:
+    driver: bridge
