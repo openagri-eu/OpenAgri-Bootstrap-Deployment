@@ -12,17 +12,6 @@ services:
       timeout: 5s
       retries: 3
 
-  phpmyadmin:
-    image: phpmyadmin:latest
-    environment:
-      PMA_HOST: gatekeeper_db
-      PMA_USER: ${GATEKEEPER_DB_USER}
-      PMA_PASSWORD: ${GATEKEEPER_DB_PASS}
-    ports:
-      - 8080:80
-    depends_on:
-      - gatekeeper_db
-
   gatekeeper:
     image: ghcr.io/openagri-eu/gatekeeper:latest
     environment:
