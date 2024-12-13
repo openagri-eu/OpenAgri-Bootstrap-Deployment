@@ -1,2 +1,3 @@
 .env
 services_in_use/*.yml
+.idea
