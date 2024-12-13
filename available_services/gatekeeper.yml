@@ -1,17 +1,32 @@
-version: '3.9'
-
 services:
   gatekeeper_db:
-    image: postgres:16.3
+    image: mysql:8.0
     environment:
-      POSTGRES_DB: ${GATEKEEPER_DB_NAME}
-      POSTGRES_USER: ${GATEKEEPER_DB_USER}
-      POSTGRES_PASSWORD: ${GATEKEEPER_DB_PASS}
+      MYSQL_DATABASE: ${GATEKEEPER_DB_NAME}
+      MYSQL_USER: ${GATEKEEPER_DB_USER}
+      MYSQL_PASSWORD: ${GATEKEEPER_DB_PASS}
+      MYSQL_ROOT_PASSWORD: ${GATEKEEPER_DB_PASS}
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    environment:
+      PMA_HOST: gatekeeper_db
+      PMA_USER: ${GATEKEEPER_DB_USER}
+      PMA_PASSWORD: ${GATEKEEPER_DB_PASS}
+    ports:
+      - 8080:80
+    depends_on:
+      - gatekeeper_db
 
   gatekeeper:
     image: ghcr.io/openagri-eu/gatekeeper:latest
     environment:
-      - DATABASE_URL=postgres://${GATEKEEPER_DB_USER}:${GATEKEEPER_DB_PASS}@gatekeeper_db:5432/${GATEKEEPER_DB_NAME}
+      - DATABASE_URL=mysql://${GATEKEEPER_DB_USER}:${GATEKEEPER_DB_PASS}@gatekeeper_db:3306/${GATEKEEPER_DB_NAME}
       - MAINTENANCE_MODE=OFF
       - APP_HOST=${GATEKEEPER_APP_HOST}
       - APP_PORT=${GATEKEEPER_APP_PORT}
@@ -26,12 +41,13 @@ services:
       - EXTRA_ALLOWED_HOSTS=${GATEKEEPER_EXTRA_ALLOWED_HOSTS}
       - VIRTUAL_HOST=${GATEKEEPER_VIRTUAL_HOST}
       - VIRTUAL_PORT=${GATEKEEPER_APP_PORT}
-      - HTTP_PROXY=${HTTP_PROXY}
-      - HTTPS_PROXY=${HTTPS_PROXY}
-      - http_proxy=${HTTP_PROXY}
-      - https_proxy=${HTTPS_PROXY}
+#      - HTTP_PROXY=${HTTP_PROXY}
+#      - HTTPS_PROXY=${HTTPS_PROXY}
+#      - http_proxy=${HTTP_PROXY}
+#      - https_proxy=${HTTPS_PROXY}
       - NO_PROXY=${DEFAULT_NO_PROXY},gatekeeper_db
     ports:
       - ${GATEKEEPER_APP_PORT}:${GATEKEEPER_APP_PORT}
     depends_on:
-      - gatekeeper_db
+      gatekeeper_db:
+        condition: service_healthy
