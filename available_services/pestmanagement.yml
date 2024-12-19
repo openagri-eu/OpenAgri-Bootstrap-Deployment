@@ -13,7 +13,7 @@ services:
       interval: 360s
   pdm_backend:
     depends_on:
-      pdm_dm:
+      pdm_db:
         condition: service_healthy
     restart: on-failure
     image: ghcr.io/openagri-eu/pest-and-disease-management:latest
@@ -33,3 +33,5 @@ services:
       NO_PROXY: ${DEFAULT_NO_PROXY},pest_and_desease_management_db
       SERVICE_PORT: ${PDM_SERVICE_PORT}
       ALLOWED_HOSTS: ${PDM_ALLOWED_HOSTS}
+      BACKEND_CORS_ORIGINS: ${PDM_BACKEND_CORS_ORIGINS}
+      JWT_ALGORITHM: ${PDM_JWT_ALGORITHM}
