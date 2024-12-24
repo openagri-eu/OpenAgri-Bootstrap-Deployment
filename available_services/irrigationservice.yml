@@ -1,0 +1,40 @@
+services:
+  irr_db:
+    image: postgres:16.3
+    environment:
+      POSTGRES_DB: ${IRR_POSTGRES_DB}
+      POSTGRES_USER: ${IRR_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${IRR_POSTGRES_PASSWORD}
+      PGPORT: ${IRR_POSTGRES_PORT}
+    healthcheck:
+      test: pg_isready -U ${IRR_POSTGRES_USER} -d ${IRR_POSTGRES_DB}
+      start_period: 10s
+      retries: 3
+      interval: 360s
+  irr_backend:
+    depends_on:
+      irr_db:
+        condition: service_healthy
+    restart: on-failure
+    image: ghcr.io/openagri-eu/irrigation-management:latest
+    command: /code/entrypoint.sh ${IRR_SERVICE_PORT}
+    ports:
+      - ${IRR_SERVICE_PORT}:${IRR_SERVICE_PORT}
+    environment:
+      POSTGRES_HOST: irr_db
+      POSTGRES_USER: ${IRR_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${IRR_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${IRR_POSTGRES_DB}
+      POSTGRES_PORT: ${IRR_POSTGRES_PORT}
+      ACCESS_TOKEN_EXPIRATION_TIME: ${IRR_ACCESS_TOKEN_EXPIRATION_TIME}
+      JWT_KEY: ${JWT_SIGNING_KEY}
+      LOGGING_LEVEL: ${LOGGING_LEVEL}
+      NO_PROXY: ${DEFAULT_NO_PROXY}, irrigation_management_db
+      SERVICE_PORT: ${IRR_SERVICE_PORT}
+      BACKEND_CORS_ORIGINS: ${IRR_BACKEND_CORS_ORIGINS}
+      JWT_ALGORITHM: ${IRR_JWT_ALGORITHM}
+      GATEKEEPER_BASE_URL: ${IRR_GATEKEEPER_BASE_URL}
+      USING_GATEKEEPER: ${IRR_USING_GATEKEEPER}
+      GATEKEEPER_USERNAME: ${GATEKEEPER_SUPERUSER_USERNAME}
+      GATEKEEPER_PASSWORD: ${GATEKEEPER_SUPERUSER_PASSWORD}
+      SERVICE_NAME: ${IRR_SERVICE_NAME}
