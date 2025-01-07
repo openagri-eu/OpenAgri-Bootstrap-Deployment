@@ -1,4 +1,3 @@
-# version: '3.9'
 
 services:
   weathersrv_db:
@@ -15,17 +14,24 @@ services:
   weathersrv:
     image: ghcr.io/openagri-eu/weather-service:latest
     depends_on:
-      - mongodb
+      - weathersrv_db
+      - gatekeeper
+    restart: on-failure
     ports:
-      - '8000:8000'
       - "${WEATHER_SRV_PORT}:${WEATHER_SRV_PORT}"
     environment:
       LOGGING_LEVEL: ${WEATHER_SRV_LOGGING_LEVEL:-INFO}
       WEATHER_SRV_PORT: ${WEATHER_SRV_PORT:-8000}
+      WEATHER_SRV_HOSTNAME: ${WEATHER_SRV_HOSTNAME:-weathersrv}
       DATABASE_URI: ${WEATHER_SRV_DATABASE_URI}
       DATABASE_NAME: ${WEATHER_SRV_DATABASE_NAME}
+      GATEKEEPER_APP_PORT: ${GATEKEEPER_APP_PORT}
+      # If the above value is set then weather service will try to integrate with Gatekeeper
+      GATEKEEPER_URL: ${GATEKEEPER_URL:-http://gatekeeper}
+      WEATHER_SRV_GATEKEEPER_USER: ${GATEKEEPER_SUPERUSER_USERNAME}
+      WEATHER_SRV_GATEKEEPER_PASSWORD: ${GATEKEEPER_SUPERUSER_PASSWORD}
       EXTRA_ALLOWED_HOSTS: ${WEATHER_SRV_EXTRA_ALLOWED_HOSTS}
-      OPENWEATHERMAP_API_KEY: ${WEATHER_SRV_OPENWEATHERMAP_KEY}
+      OPENWEATHERMAP_API_KEY: ${WEATHER_SRV_OPENWEATHERMAP_API_KEY}
       JWT_KEY: ${JWT_SIGNING_KEY}
       ALGORITHM: ${JWT_ALGORITHM:-HS256}
       CRYPT_CONTEXT_SCHEME: ${JWT_CRYPT_CONTEXT_SCHEME:-bcrypt}
