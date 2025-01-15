@@ -1,61 +1,93 @@
-import json
 import requests
 
-gatekeeper_url = 'http://127.0.0.1:8001'
+# Configuration
+GATEKEEPER_URL = 'http://127.0.0.1:8001'
 
-url = f"{gatekeeper_url}/api/login/"
 
-# User credentials in test database
-response = requests.post(
-    url,
-    json={
-        "username": "admin",
-        "password": "admin"
-    },
-    headers={"Content-Type": "application/json"}
-)
+# Function to log in and fetch an access token
+def login_to_gatekeeper(username, password):
+    url = f"{GATEKEEPER_URL}/api/login/"
+    try:
+        response = requests.post(
+            url,
+            json={"username": username, "password": password},
+            headers={"Content-Type": "application/json"}
+        )
+        response.raise_for_status()
+        tokens = response.json()
+        return tokens.get("access", "")
+    except requests.exceptions.RequestException as e:
+        print(f"Error during login: {e}")
+        return ""
 
-token = ''
 
-if response.status_code == 200:
-    # Extract tokens from the JSON response
-    tokens = response.json()
-    token = tokens.get("access")
-    print(token)
+# Function to register a service
+def register_service(token, service_data):
+    url = f"{GATEKEEPER_URL}/api/register_service/"
+    headers = {'Authorization': f'Bearer {token}'}
+    try:
+        response = requests.post(url, json=service_data, headers=headers)
+        if response.status_code == 201:
+            print("Service created successfully.")
+        elif response.status_code == 200:
+            print("Service already exists. Updating the service with new data.")
+            print("Service updated successfully.")
+        else:
+            print(f"Unexpected status code during service registration: {response.status_code}")
+        return response.json()  # Return response for further processing if needed
+    except requests.exceptions.RequestException as e:
+        print(f"Error during service registration: {e}")
+        return None
 
-# # User credentials in test database
-# data = {
-#     "base_url": "http://farmcalendar:8002/",
-#     "service_name": "farm_calendar",
-#     "endpoint": "api/v1/Farm/",
-#     "methods": ["GET", "POST"],
-#     "version": "v1",
-#     "params": "name={string}&status={integer}"
-# }
-#
-# url = f"{gatekeeper_url}/api/register_service/"
-#
-# # Send POST request to get the token
-# headers = {
-#     'Authorization': f'Bearer {token}',
-# }
-#
-# response = requests.post(url, json=data, headers=headers)
 
-service_url = 'http://127.0.0.1:8001/api/proxy/weather_data/api/data/thi/?lat=12.0&lon=12.0'
-# service_url = 'http://127.0.0.1:8003/api/data/thi/?lat=12.0&lon=12.0'
+# Function to send a GET request to a service proxy
+def fetch_service_data(token, service_url):
+    headers = {'Authorization': f'Bearer {token}'}
+    try:
+        response = requests.get(service_url, headers=headers)
+        response.raise_for_status()
+        return response.json()  # Return response for further processing if needed
+    except requests.exceptions.RequestException as e:
+        print(f"Error while fetching service data: {e}")
+        return None
 
-headers = {
-    'Authorization': f'Bearer {token}',
-}
 
-request_kwargs = {
-    'headers': headers
-}
+# Main logic
+if __name__ == "__main__":
+    print("Logging into the gatekeeper")
+    token = login_to_gatekeeper("admin", "admin")
 
-response = requests.get(service_url, **request_kwargs)
+    if token:
+        print("Successfully logged in.")
 
-print(response.text)
+        # Service registration data
+        service_data = {
+            "base_url": "http://weathersrv:8003/",
+            "service_name": "weather_data",
+            "endpoint": "api/data/thi/",
+            "methods": ["GET"],
+            "params": "lat=12.0&lon=12.0",
+            "comments": "Any comments about this service"
+        }
 
-# print(f"Response Status Code: {response.status_code}\n\n")
-# print(f"Response Content: {json.dumps(response.json(), indent=4)}\n\n")
+        print("Registering the service...")
+        registration_response = register_service(token, service_data)
+
+        if registration_response:
+            print(f"Registration response: {registration_response.get('message')}")
+        else:
+            print("Service registration failed.")
+
+        # Service URL
+        service_url = f"{GATEKEEPER_URL}/api/proxy/weather_data/api/data/thi/?lat=12.0&lon=12.0"
+
+        print("Fetching service data...")
+        service_response = fetch_service_data(token, service_url)
+
+        if service_response:
+            print("Service data fetched successfully:")
+            print(service_response)
+        else:
+            print("Failed to fetch service data.")
+    else:
+        print("Login failed. Please check your credentials or server status.")
