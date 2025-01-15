@@ -7,6 +7,12 @@ services:
       POSTGRES_DB: ${FARM_CALENDAR_POSTGRES_DB}
       POSTGRES_USER: ${FARM_CALENDAR_POSTGRES_USER}
       POSTGRES_PASSWORD: ${FARM_CALENDAR_POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $FARM_CALENDAR_POSTGRES_USER -d $FARM_CALENDAR_POSTGRES_DB || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
   farmcalendar:
     image: ghcr.io/openagri-eu/farmcalendar:latest
     command: /var/www/entrypoint.sh
@@ -34,4 +40,5 @@ services:
       https_proxy: ${HTTPS_PROXY}
       NO_PROXY: ${DEFAULT_NO_PROXY},farmcalendar_db
     depends_on:
-      - farmcalendar_db
+      farmcalendar_db:
+        condition: service_healthy
