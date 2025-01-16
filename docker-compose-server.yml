@@ -1,0 +1,169 @@
+services:
+  gatekeeper_db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: ${GATEKEEPER_DB_NAME}
+      MYSQL_USER: ${GATEKEEPER_DB_USER}
+      MYSQL_PASSWORD: ${GATEKEEPER_DB_PASS}
+      MYSQL_ROOT_PASSWORD: ${GATEKEEPER_DB_PASS}
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - gatekeeper_db_data:/var/lib/mysql
+    networks:
+      - test_sip1
+
+  gatekeeper:
+    image: ghcr.io/openagri-eu/gatekeeper:latest
+    environment:
+      - DATABASE_URL=mysql://${GATEKEEPER_DB_USER}:${GATEKEEPER_DB_PASS}@gatekeeper_db:3306/${GATEKEEPER_DB_NAME}
+      - MAINTENANCE_MODE=${MAINTENANCE_MODE}
+      - APP_HOST=${GATEKEEPER_APP_HOST}
+      - APP_PORT=${GATEKEEPER_APP_PORT}
+      - DJANGO_PORT=${GATEKEEPER_APP_PORT}
+      - DJANGO_SECRET_KEY=${GATEKEEPER_DJANGO_SECRET_KEY}
+      - SUPERUSER_USERNAME=${GATEKEEPER_SUPERUSER_USERNAME}
+      - SUPERUSER_EMAIL=${GATEKEEPER_SUPERUSER_EMAIL}
+      - SUPERUSER_PASSWORD=${GATEKEEPER_SUPERUSER_PASSWORD}
+      - JWT_SIGNING_KEY=${JWT_SIGNING_KEY}
+      - FARM_CALENDAR_API=${GATEKEEPER_FARM_CALENDAR_API}
+      - FARM_CALENDAR_POST_AUTH=${GATEKEEPER_FARM_CALENDAR_POST_AUTH}
+      - EXTRA_ALLOWED_HOSTS=${EXTRA_ALLOWED_HOSTS}
+      - NO_PROXY=${DEFAULT_NO_PROXY},gatekeeper_db
+      - DJANGO_DEBUG=${DJANGO_DEBUG}
+      - INTERNAL_GK_URL=${INTERNAL_GK_URL}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gatekeeper.rule=Host(`gk.sip1.horizon-openagri.eu`)"
+      - "traefik.http.routers.gatekeeper.entryPoints=websecure"
+      - "traefik.http.routers.gatekeeper.tls.certresolver=letsencrypt"
+      - "traefik.docker.network=test_sip1"
+      - "traefik.http.services.gatekeeper.loadbalancer.server.port=8001"
+    ports:
+      - ${GATEKEEPER_APP_PORT}:${GATEKEEPER_APP_PORT}
+    volumes:
+      - gatekeeper_static:/app/static
+      - gatekeeper_media:/app/media
+    depends_on:
+      gatekeeper_db:
+        condition: service_healthy
+    networks:
+      - test_sip1
+
+  farmcalendar_db:
+    image: postgres:16.3
+    environment:
+      POSTGRES_DB: ${FARM_CALENDAR_POSTGRES_DB}
+      POSTGRES_USER: ${FARM_CALENDAR_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${FARM_CALENDAR_POSTGRES_PASSWORD}
+    volumes:
+    - farmcalendar_db_data:/var/lib/postgresql/data
+    networks:
+      - test_sip1
+
+  farmcalendar:
+    image: ghcr.io/openagri-eu/farmcalendar:latest
+    command: /var/www/entrypoint.sh
+    ports:
+      - "${FARM_CALENDAR_APP_PORT}:${FARM_CALENDAR_APP_PORT}"
+    environment:
+      APP_HOST: ${FARM_CALENDAR_APP_HOST}
+      APP_PORT: ${FARM_CALENDAR_APP_PORT}
+      POSTGRES_HOST: farmcalendar_db
+      POSTGRES_DB: ${FARM_CALENDAR_POSTGRES_DB}
+      POSTGRES_USER: ${FARM_CALENDAR_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${FARM_CALENDAR_POSTGRES_PASSWORD}
+      DJANGO_SECRET_KEY: ${FARM_CALENDAR_DJANGO_SECRET_KEY}
+      LOGGING_LEVEL: ${LOGGING_LEVEL}
+      GATEKEEPER_LOGIN_URL: ${GATEKEEPER_LOGIN_URL}
+      AUTO_CREATE_AUTH_USER: True
+      JWT_SIGNING_KEY: ${JWT_SIGNING_KEY}
+      JWT_COOKIE_NAME: ${JWT_COOKIE_NAME}
+      EXTRA_ALLOWED_HOSTS: ${FARM_CALENDAR_EXTRA_ALLOWED_HOSTS}
+      NO_PROXY: ${DEFAULT_NO_PROXY},farmcalendar_db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.farmcalendar.rule=Host(`fc.sip1.horizon-openagri.eu`)"
+      - "traefik.http.routers.farmcalendar.entryPoints=websecure"
+      - "traefik.http.routers.farmcalendar.tls.certresolver=letsencrypt"
+      - "traefik.docker.network=test_sip1"
+      - "traefik.http.services.farmcalendar.loadbalancer.server.port=8002"
+    volumes:
+      - farmcalendar_static:/app/static
+      - farmcalendar_media:/app/media
+    depends_on:
+      - farmcalendar_db
+    networks:
+      - test_sip1
+
+  pdm_db:
+    image: postgres:16.3
+    environment:
+      POSTGRES_DB: ${PDM_POSTGRES_DB}
+      POSTGRES_USER: ${PDM_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${PDM_POSTGRES_PASSWORD}
+      PGPORT: ${PDM_POSTGRES_PORT}
+    healthcheck:
+      test: pg_isready -U ${PDM_POSTGRES_USER} -d ${PDM_POSTGRES_DB}
+      start_period: 10s
+      retries: 3
+      interval: 360s
+    volumes:
+      - pdm_db_data:/var/lib/postgresql/data
+    networks:
+      - test_sip1
+
+  pdm_backend:
+    depends_on:
+      pdm_db:
+        condition: service_healthy
+    restart: on-failure
+    image: ghcr.io/openagri-eu/pest-and-disease-management:latest
+    command: /code/entrypoint.sh ${PDM_SERVICE_PORT}
+    ports:
+      - ${PDM_SERVICE_PORT}:${PDM_SERVICE_PORT}
+    environment:
+      POSTGRES_HOST: pdm_db
+      POSTGRES_USER: ${PDM_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${PDM_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${PDM_POSTGRES_DB}
+      POSTGRES_PORT: ${PDM_POSTGRES_PORT}
+      ACCESS_TOKEN_EXPIRATION_TIME: ${PDM_ACCESS_TOKEN_EXPIRATION_TIME}
+      JWT_KEY: ${JWT_SIGNING_KEY}
+      LOGGING_LEVEL: ${LOGGING_LEVEL}
+      NO_PROXY: ${DEFAULT_NO_PROXY},pest_and_desease_management_db
+      SERVICE_PORT: ${PDM_SERVICE_PORT}
+      BACKEND_CORS_ORIGINS: ${PDM_BACKEND_CORS_ORIGINS}
+      JWT_ALGORITHM: ${JWT_ALG}
+      GATEKEEPER_BASE_URL: ${INTERNAL_GK_URL}
+      USING_GATEKEEPER: ${PDM_USING_GATEKEEPER}
+      GATEKEEPER_USERNAME: ${GATEKEEPER_SUPERUSER_USERNAME}
+      GATEKEEPER_PASSWORD: ${GATEKEEPER_SUPERUSER_PASSWORD}
+      SERVICE_NAME: ${SERVICE_NAME}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pdm_backend.rule=Host(`pdm.sip1.horizon-openagri.eu`)"
+      - "traefik.http.routers.pdm_backend.entryPoints=websecure"
+      - "traefik.http.routers.pdm_backend.tls.certresolver=letsencrypt"
+      - "traefik.docker.network=test_sip1"
+      - "traefik.http.services.pdm_backend.loadbalancer.server.port=8003"
+    networks:
+      - test_sip1
+
+
+networks:
+  test_sip1:
+    external: true
+
+volumes:
+  gatekeeper_db_data:
+  farmcalendar_db_data:
+  gatekeeper_static:
+  gatekeeper_media:
+  farmcalendar_static:
+  farmcalendar_media:
+  pdm_db_data:
+
