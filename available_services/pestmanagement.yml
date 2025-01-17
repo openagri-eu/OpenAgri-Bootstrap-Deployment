@@ -1,0 +1,40 @@
+services:
+  pdm_db:
+    image: postgres:16.3
+    environment:
+      POSTGRES_DB: ${PDM_POSTGRES_DB}
+      POSTGRES_USER: ${PDM_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${PDM_POSTGRES_PASSWORD}
+      PGPORT: ${PDM_POSTGRES_PORT}
+    healthcheck:
+      test: pg_isready -U ${PDM_POSTGRES_USER} -d ${PDM_POSTGRES_DB}
+      start_period: 10s
+      retries: 3
+      interval: 360s
+  pdm_backend:
+    depends_on:
+      pdm_db:
+        condition: service_healthy
+    restart: on-failure
+    image: ghcr.io/openagri-eu/pest-and-disease-management:latest
+    command: /code/entrypoint.sh ${PDM_SERVICE_PORT}
+    ports:
+      - ${PDM_SERVICE_PORT}:${PDM_SERVICE_PORT}
+    environment:
+      POSTGRES_HOST: pdm_db
+      POSTGRES_USER: ${PDM_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${PDM_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${PDM_POSTGRES_DB}
+      POSTGRES_PORT: ${PDM_POSTGRES_PORT}
+      ACCESS_TOKEN_EXPIRATION_TIME: ${PDM_ACCESS_TOKEN_EXPIRATION_TIME}
+      JWT_KEY: ${JWT_SIGNING_KEY}
+      LOGGING_LEVEL: ${LOGGING_LEVEL}
+      NO_PROXY: ${DEFAULT_NO_PROXY},pest_and_desease_management_db
+      SERVICE_PORT: ${PDM_SERVICE_PORT}
+      BACKEND_CORS_ORIGINS: ${PDM_BACKEND_CORS_ORIGINS}
+      JWT_ALGORITHM: ${PDM_JWT_ALGORITHM}
+      GATEKEEPER_BASE_URL: ${PDM_GATEKEEPER_BASE_URL}
+      USING_GATEKEEPER: ${PDM_USING_GATEKEEPER}
+      GATEKEEPER_USERNAME: ${GATEKEEPER_SUPERUSER_USERNAME}
+      GATEKEEPER_PASSWORD: ${GATEKEEPER_SUPERUSER_PASSWORD}
+      SERVICE_NAME: ${SERVICE_NAME}

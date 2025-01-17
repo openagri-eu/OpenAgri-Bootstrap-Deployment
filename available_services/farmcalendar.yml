@@ -7,6 +7,12 @@ services:
       POSTGRES_DB: ${FARM_CALENDAR_POSTGRES_DB}
       POSTGRES_USER: ${FARM_CALENDAR_POSTGRES_USER}
       POSTGRES_PASSWORD: ${FARM_CALENDAR_POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $FARM_CALENDAR_POSTGRES_USER -d $FARM_CALENDAR_POSTGRES_DB || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
   farmcalendar:
     image: ghcr.io/openagri-eu/farmcalendar:latest
     command: /var/www/entrypoint.sh
@@ -22,6 +28,11 @@ services:
       DJANGO_SECRET_KEY: ${FARM_CALENDAR_DJANGO_SECRET_KEY}
       LOGGING_LEVEL: ${LOGGING_LEVEL}
       GATEKEEPER_LOGIN_URL: ${GATEKEEPER_LOGIN_URL}
+      GATEKEEPER_API_LOGIN_URL: ${GATEKEEPER_API_LOGIN_URL}
+      GATEKEEPER_ENDPOINT_REG_URL: ${GATEKEEPER_ENDPOINT_REG_URL}
+      INTERNAL_SERVICE_NAME: farmcalendar
+      FARMCALENDAR_GATEKEEPER_USER: ${GATEKEEPER_SUPERUSER_USERNAME}
+      FARMCALENDAR_GATEKEEPER_PASSWORD: ${GATEKEEPER_SUPERUSER_PASSWORD}
       AUTO_CREATE_AUTH_USER: True
       JWT_SIGNING_KEY: ${JWT_SIGNING_KEY}
       JWT_COOKIE_NAME: ${JWT_COOKIE_NAME}
@@ -34,4 +45,7 @@ services:
       https_proxy: ${HTTPS_PROXY}
       NO_PROXY: ${DEFAULT_NO_PROXY},farmcalendar_db
     depends_on:
-      - farmcalendar_db
+      farmcalendar_db:
+        condition: service_healthy
+      gatekeeper:
+        condition: service_started
