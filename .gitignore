@@ -1,3 +1,4 @@
 .env
 services_in_use/*.yml
 .idea
+docker-compose.override.yml
