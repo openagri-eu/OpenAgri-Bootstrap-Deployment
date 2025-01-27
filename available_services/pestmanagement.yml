@@ -8,9 +8,10 @@ services:
       PGPORT: ${PDM_POSTGRES_PORT}
     healthcheck:
       test: pg_isready -U ${PDM_POSTGRES_USER} -d ${PDM_POSTGRES_DB}
-      start_period: 10s
+      interval: 10s
+      timeout: 5s
       retries: 3
-      interval: 360s
+      start_period: 10s
   pdm_backend:
     depends_on:
       pdm_db:
