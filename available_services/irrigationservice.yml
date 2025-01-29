@@ -10,12 +10,11 @@ services:
       test: pg_isready -U ${IRR_POSTGRES_USER} -d ${IRR_POSTGRES_DB}
       start_period: 10s
       retries: 3
-      interval: 360s
+      interval: 10s
   irr_backend:
     depends_on:
       irr_db:
         condition: service_healthy
-    restart: on-failure
     image: ghcr.io/openagri-eu/irrigation-management:latest
     command: /code/entrypoint.sh ${IRR_SERVICE_PORT}
     ports:
