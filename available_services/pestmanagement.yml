@@ -16,7 +16,8 @@ services:
     depends_on:
       pdm_db:
         condition: service_healthy
-    restart: on-failure
+      gatekeeper:
+        condition: service_started
     image: ghcr.io/openagri-eu/pest-and-disease-management:latest
     command: /code/entrypoint.sh ${PDM_SERVICE_PORT}
     ports:
