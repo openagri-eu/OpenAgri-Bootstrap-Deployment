@@ -23,7 +23,7 @@ services:
       weathersrv_db:
         condition: service_healthy
       gatekeeper:
-        condition: service_started
+        condition: service_healthy
     ports:
       - "${WEATHER_SRV_PORT}:${WEATHER_SRV_PORT}"
     environment:

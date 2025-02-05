@@ -43,6 +43,12 @@ services:
       - gatekeeper_static:/static
       - gatekeeper_media:/media
       - gatekeeper_assets:/assets
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/swagger/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   gatekeeper_db_data:
