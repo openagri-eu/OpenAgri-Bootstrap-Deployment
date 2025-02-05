@@ -10,6 +10,8 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${WEATHER_SRV_MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${WEATHER_SRV_MONGO_INITDB_ROOT_PASSWORD}
       MONGO_INITDB_DATABASE: ${WEATHER_SRV_MONGO_INITDB_DATABASE}
+    volumes:
+      - mongodb_data:/data/db
     healthcheck:
       test: ["CMD", "mongo", "--eval", "db.runCommand('ping').ok"]
       interval: 10s
@@ -46,3 +48,5 @@ services:
       WEATHER_SRV_GATEKEEPER_USER: ${GATEKEEPER_SUPERUSER_USERNAME}
       WEATHER_SRV_GATEKEEPER_PASSWORD: ${GATEKEEPER_SUPERUSER_PASSWORD}
 
+volumes:
+  mongodb_data:
