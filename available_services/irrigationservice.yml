@@ -1,5 +1,5 @@
 services:
-  irr_db:
+  irrigation_db:
     image: postgres:16.3
     environment:
       POSTGRES_DB: ${IRR_POSTGRES_DB}
@@ -11,10 +11,12 @@ services:
       start_period: 10s
       retries: 3
       interval: 10s
-  irr_backend:
+  irrigation:
     depends_on:
-      irr_db:
+      irrigation_db:
         condition: service_healthy
+      gatekeeper:
+        condition: service_started
     image: ghcr.io/openagri-eu/irrigation-management:latest
     command: /code/entrypoint.sh ${IRR_SERVICE_PORT}
     ports:
@@ -32,7 +34,7 @@ services:
       SERVICE_PORT: ${IRR_SERVICE_PORT}
       BACKEND_CORS_ORIGINS: ${IRR_BACKEND_CORS_ORIGINS}
       JWT_ALGORITHM: ${JWT_ALG}
-      GATEKEEPER_BASE_URL: ${IRR_GATEKEEPER_BASE_URL}
+      GATEKEEPER_BASE_URL: ${INTERNAL_GK_URL}
       USING_GATEKEEPER: ${IRR_USING_GATEKEEPER}
       GATEKEEPER_USERNAME: ${GATEKEEPER_SUPERUSER_USERNAME}
       GATEKEEPER_PASSWORD: ${GATEKEEPER_SUPERUSER_PASSWORD}
