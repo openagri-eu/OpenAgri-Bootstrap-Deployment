@@ -13,6 +13,9 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+    volumes:
+      - farmcalendar_db_data:/var/lib/postgresql/data
+
   farmcalendar:
     image: ghcr.io/openagri-eu/farmcalendar:latest
     command: /var/www/entrypoint.sh
@@ -49,3 +52,7 @@ services:
         condition: service_healthy
       gatekeeper:
         condition: service_started
+
+
+volumes:
+  farmcalendar_db_data:
