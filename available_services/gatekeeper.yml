@@ -40,10 +40,10 @@ services:
       gatekeeper_db:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD-SHELL", "curl --fail http://0.0.0.0:8001/healthz || exit 1" ]
-      interval: 30s
+      test: [ "CMD-SHELL", "curl --fail http://gatekeeper:8001/healthz || exit 1" ]
+      interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 5
       start_period: 30s
     volumes:
       - gatekeeper_static:/static
