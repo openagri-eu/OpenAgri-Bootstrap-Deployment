@@ -10,29 +10,42 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${WEATHER_SRV_MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${WEATHER_SRV_MONGO_INITDB_ROOT_PASSWORD}
       MONGO_INITDB_DATABASE: ${WEATHER_SRV_MONGO_INITDB_DATABASE}
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.runCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   weathersrv:
     image: ghcr.io/openagri-eu/weather-service:latest
     depends_on:
-      - weathersrv_db
-      - gatekeeper
-    restart: on-failure
+      weathersrv_db:
+        condition: service_healthy
+      gatekeeper:
+        condition: service_healthy
     ports:
       - "${WEATHER_SRV_PORT}:${WEATHER_SRV_PORT}"
     environment:
-      LOGGING_LEVEL: ${WEATHER_SRV_LOGGING_LEVEL:-INFO}
+      # Generic environment vars
+      LOGGING_LEVEL: ${LOGGING_LEVEL:-INFO}
+      JWT_KEY: ${JWT_SIGNING_KEY}
+      ALGORITHM: ${JWT_ALG:-HS256}
+      CRYPT_CONTEXT_SCHEME: ${JWT_CRYPT_CONTEXT_SCHEME:-bcrypt}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRATION_TIME:-240}
+      # Service specific vars
       WEATHER_SRV_PORT: ${WEATHER_SRV_PORT:-8000}
       WEATHER_SRV_HOSTNAME: ${WEATHER_SRV_HOSTNAME:-weathersrv}
       DATABASE_URI: ${WEATHER_SRV_DATABASE_URI}
       DATABASE_NAME: ${WEATHER_SRV_DATABASE_NAME}
-      GATEKEEPER_APP_PORT: ${GATEKEEPER_APP_PORT}
+      EXTRA_ALLOWED_HOSTS: ${WEATHER_SRV_EXTRA_ALLOWED_HOSTS:-*}
+      OPENWEATHERMAP_API_KEY: ${WEATHER_SRV_OPENWEATHERMAP_API_KEY}
       # If the above value is set then weather service will try to integrate with Gatekeeper
-      GATEKEEPER_URL: ${GATEKEEPER_URL:-http://gatekeeper}
+      GATEKEEPER_URL: ${INTERNAL_GK_URL}
       WEATHER_SRV_GATEKEEPER_USER: ${GATEKEEPER_SUPERUSER_USERNAME}
       WEATHER_SRV_GATEKEEPER_PASSWORD: ${GATEKEEPER_SUPERUSER_PASSWORD}
-      EXTRA_ALLOWED_HOSTS: ${WEATHER_SRV_EXTRA_ALLOWED_HOSTS}
-      OPENWEATHERMAP_API_KEY: ${WEATHER_SRV_OPENWEATHERMAP_API_KEY}
-      JWT_KEY: ${JWT_SIGNING_KEY}
-      ALGORITHM: ${JWT_ALGORITHM:-HS256}
-      CRYPT_CONTEXT_SCHEME: ${JWT_CRYPT_CONTEXT_SCHEME:-bcrypt}
-      ACCESS_TOKEN_EXPIRE_MINUTES: 60
+
+volumes:
+  mongodb_data:
