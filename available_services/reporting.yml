@@ -12,12 +12,13 @@ services:
       start_period: 10s
       retries: 3
       interval: 10s
+
   reporting:
     depends_on:
       reportingdb:
         condition: service_healthy
       gatekeeper:
-        condition: service_started
+        condition: service_helathy
     image: ghcr.io/openagri-eu/reporting-service:latest
     command: /code/entrypoint.sh ${REPORTING_SERVICE_PORT}
     ports:
