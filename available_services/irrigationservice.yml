@@ -16,13 +16,13 @@ services:
       irrigation_db:
         condition: service_healthy
       gatekeeper:
-        condition: service_started
+        condition: service_healthy
     image: ghcr.io/openagri-eu/irrigation-management:latest
     command: /code/entrypoint.sh ${IRR_SERVICE_PORT}
     ports:
       - ${IRR_SERVICE_PORT}:${IRR_SERVICE_PORT}
     environment:
-      POSTGRES_HOST: irr_db
+      POSTGRES_HOST: irrigation_db
       POSTGRES_USER: ${IRR_POSTGRES_USER}
       POSTGRES_PASSWORD: ${IRR_POSTGRES_PASSWORD}
       POSTGRES_DB: ${IRR_POSTGRES_DB}
