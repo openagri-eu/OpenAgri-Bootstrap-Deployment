@@ -11,6 +11,7 @@ services:
       start_period: 10s
       retries: 3
       interval: 10s
+      
   irrigation:
     depends_on:
       irrigation_db:
