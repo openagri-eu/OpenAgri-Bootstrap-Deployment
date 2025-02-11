@@ -18,7 +18,7 @@ services:
       reportingdb:
         condition: service_healthy
       gatekeeper:
-        condition: service_helathy
+        condition: service_healthy
     image: ghcr.io/openagri-eu/reporting-service:latest
     command: /code/entrypoint.sh ${REPORTING_SERVICE_PORT}
     ports:
