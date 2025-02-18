@@ -52,3 +52,6 @@ services:
         condition: service_healthy
       gatekeeper:
         condition: service_healthy
+
+volumes:
+  farmcalendar_db_data:
