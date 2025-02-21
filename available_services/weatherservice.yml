@@ -3,9 +3,6 @@ services:
   weathersrv_db:
     image: mongo:4
     command: mongod
-    ports:
-      - '24252:24252'
-      - '27017:27017'
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${WEATHER_SRV_MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${WEATHER_SRV_MONGO_INITDB_ROOT_PASSWORD}
