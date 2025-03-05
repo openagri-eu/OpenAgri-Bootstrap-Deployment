@@ -23,6 +23,8 @@ services:
         condition: service_healthy
       gatekeeper:
         condition: service_healthy
+      farmcalendar:
+        condition: service_healthy
     ports:
       - "${WEATHER_SRV_PORT}:${WEATHER_SRV_PORT}"
     environment:
@@ -43,6 +45,10 @@ services:
       GATEKEEPER_URL: ${INTERNAL_GK_URL}
       WEATHER_SRV_GATEKEEPER_USER: ${GATEKEEPER_SUPERUSER_USERNAME}
       WEATHER_SRV_GATEKEEPER_PASSWORD: ${GATEKEEPER_SUPERUSER_PASSWORD}
+      # FARM CALENDAR
+      PUSH_THI_TO_FARMCALENDAR: ${PUSH_THI_TO_FARMCALENDAR}
+      FARM_CALENDAR_URL: ${FARM_CALENDAR_URL}
+      INTERVAL_THI_TO_FARMCALENDAR: ${INTERVAL_THI_TO_FARMCALENDAR}
     volumes:
       - ./data:/data:rw
 
