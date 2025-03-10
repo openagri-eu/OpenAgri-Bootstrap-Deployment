@@ -47,6 +47,12 @@ services:
       http_proxy: ${HTTP_PROXY}
       https_proxy: ${HTTPS_PROXY}
       NO_PROXY: ${DEFAULT_NO_PROXY},farmcalendar_db
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:${FARM_CALENDAR_APP_PORT}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     depends_on:
       farmcalendar_db:
         condition: service_healthy
