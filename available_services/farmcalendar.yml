@@ -19,8 +19,6 @@ services:
   farmcalendar:
     image: ghcr.io/openagri-eu/farmcalendar:latest
     command: /var/www/entrypoint.sh
-    ports:
-      - "${FARM_CALENDAR_APP_PORT}:${FARM_CALENDAR_APP_PORT}"
     environment:
       APP_HOST: ${FARM_CALENDAR_APP_HOST}
       APP_PORT: ${FARM_CALENDAR_APP_PORT}

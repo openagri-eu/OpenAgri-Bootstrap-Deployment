@@ -11,7 +11,7 @@ services:
       start_period: 10s
       retries: 3
       interval: 10s
-      
+
   irrigation:
     depends_on:
       irrigation_db:
@@ -20,8 +20,6 @@ services:
         condition: service_healthy
     image: ghcr.io/openagri-eu/irrigation-management:latest
     command: /code/entrypoint.sh ${IRR_SERVICE_PORT}
-    ports:
-      - ${IRR_SERVICE_PORT}:${IRR_SERVICE_PORT}
     environment:
       POSTGRES_HOST: irrigation_db
       POSTGRES_USER: ${IRR_POSTGRES_USER}
