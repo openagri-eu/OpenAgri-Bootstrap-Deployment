@@ -20,8 +20,6 @@ services:
         condition: service_healthy
     image: ghcr.io/openagri-eu/pest-and-disease-management:latest
     command: /code/entrypoint.sh ${PDM_SERVICE_PORT}
-    ports:
-      - ${PDM_SERVICE_PORT}:${PDM_SERVICE_PORT}
     environment:
       POSTGRES_HOST: pdm_db
       POSTGRES_USER: ${PDM_POSTGRES_USER}

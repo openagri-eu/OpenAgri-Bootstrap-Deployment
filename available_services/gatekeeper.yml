@@ -34,8 +34,6 @@ services:
       - DJANGO_DEBUG=${GATEKEEPER_DJANGO_DEBUG}
       - INTERNAL_GK_URL=${INTERNAL_GK_URL}
       - DJANGO_STATIC_ROOT=${GATEKEEPER_DJANGO_STATIC_ROOT}
-    ports:
-      - ${GATEKEEPER_APP_PORT}:${GATEKEEPER_APP_PORT}
     depends_on:
       gatekeeper_db:
         condition: service_healthy
