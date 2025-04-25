@@ -14,14 +14,14 @@ SERVICE_LOCAL_PORT_MAPPING_TEMPLATE = """
 
 SERVICE_FILE_NAMES_TO_SERVICE_NAME = {
     'irrigationservice.yml': 'irrigation',
-    'pestmanagement.yml': 'pdm_backend',
+    'pestmanagement.yml': 'pdm',
     'weatherservice.yml': 'weathersrv',
 }
 
 SERVICE_NAMES_TO_PORT_ENV_VARS = {
     "gatekeeper": 'GATEKEEPER_APP_PORT',
     "farmcalendar": 'FARM_CALENDAR_APP_PORT',
-    "pdm_backend": 'PDM_SERVICE_PORT',
+    "pdm": 'PDM_SERVICE_PORT',
     "weathersrv": 'WEATHER_SRV_PORT',
     "irrigation": 'IRR_SERVICE_PORT',
     "reporting": 'REPORTING_SERVICE_PORT',
