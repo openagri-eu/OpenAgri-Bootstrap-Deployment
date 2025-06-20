@@ -1,4 +1,8 @@
 # OpenAgri Bootstrap Deployment
+🇪🇺
+*"This repository was created in the context of OpenAgri project (https://horizon-openagri.eu/). OpenAgri has received funding from the EU’s Horizon Europe research and innovation programme under Grant Agreement no. 101134083."*
+
+
 This repository serves to bootstrap the deployment process of OpenAgri services with a modular configuration.
 
 # Dependencies
@@ -7,6 +11,10 @@ This project depends on docker (version > 20.10.0) and Python (2 or 3).
 # Setup
 1. Copy any service YAML (.yml) file from the `available_services` directory into the `services_in_use` directory.
 2. Copy the `example.env` to a new file called `.env`. In this new file change the configurations of the selected services to meet your deployment scenario. We strongly suggest changing configurations for the default usernames and passwords of the services used.
+3. To setup a local deployment, run the command: `$ python run_compose.py deploy-localhost`. This will automatically create a `docker-compose.override.yml` with the necessary services ports exposed to the host machine (i.e., have them accessible through `http://localhost:<service-port>`). These service ports are defined by the `<SERVICE_NAME>_APP_PORT` variable in the `.env` configuration file (e.g., `GATEKEEPER_APP_PORT=8001`).
+
+## Fine Tuning Setup
+Any fine tuning on the deployment setup for the services can be done by overriding the individual services configurations on the `docker-compose.override.yml` and/or changing the environment variable in the `.env` configuration files.
 
 # Running
 To run all, execute the following command:
@@ -16,6 +24,7 @@ $ python run_compose.py [docker_compose_commands]
 replacing `[docker_compose_commands]` with the actual docker compose command you wish to use.
 
 Bellow is a list of examples:
+
 ## Update Local Docker Images
 Update images from all services listed on `services_in_use`:
 ```
