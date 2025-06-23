@@ -18,7 +18,7 @@ services:
         condition: service_healthy
       gatekeeper:
         condition: service_healthy
-    image: ghcr.io/openagri-eu/pest-and-disease-management:latest
+    image: ghcr.io/agstack/openagri-pestanddiseasemanagement:latest
     command: /code/entrypoint.sh ${PDM_SERVICE_PORT}
     environment:
       POSTGRES_HOST: pdm_db

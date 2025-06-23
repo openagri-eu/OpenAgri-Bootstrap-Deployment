@@ -17,7 +17,7 @@ services:
       start_period: 10s
 
   weathersrv:
-    image: ghcr.io/openagri-eu/weather-service:latest
+    image: ghcr.io/agstack/openagri-weatherservice:latest
     depends_on:
       weathersrv_db:
         condition: service_healthy
